@@ -9,12 +9,20 @@ class Request
     const KEY_IP = 'ip';
     const KEY_USERNAME = 'username';
 
+    const OPTION_NO_BAD_EMAIL = 'nobademail';
+    const OPTION_NO_BAD_USERNAME = 'nobadusername';
+    const OPTION_NO_BAD_IP = 'nobadip';
+    const OPTION_NO_BAD_ALL = 'nobadall';
+    const OPTION_NO_TOR_EXIT = 'notorexit';
+    const OPTION_BAD_TOR_EXIT = 'badtorexit';
+
     const ENCODING = 'UTF-8';
 
     private $emails = [];
     private $emailHashes = [];
     private $ips = [];
     private $usernames = [];
+    private $options = [];
 
     public function addEmails(array $emails)
     {
@@ -36,6 +44,11 @@ class Request
         $this->usernames = $this->mergeAdditionalValues($this->usernames, $usernames);
     }
 
+    public function addOption(string $option)
+    {
+        $this->options = $this->mergeAdditionalValues($this->options, [$option]);
+    }
+
     public function getPayload(): array
     {
         $payload = [];
@@ -54,6 +67,10 @@ class Request
 
         if (!empty($this->usernames)) {
             $payload[self::KEY_USERNAME] = $this->usernames;
+        }
+
+        foreach ($this->options as $option) {
+            $payload[$option] = true;
         }
 
         return $payload;

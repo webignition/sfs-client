@@ -134,6 +134,55 @@ class RequestTest extends TestCase
     }
 
     /**
+     * @dataProvider addOptionDataProvider
+     */
+    public function testAddOption(array $options, array $expectedPayload)
+    {
+        foreach ($options as $option) {
+            $this->request->addOption($option);
+        }
+
+        $this->assertEquals($expectedPayload, $this->request->getPayload());
+    }
+
+    public function addOptionDataProvider(): array
+    {
+        return [
+            'no options' => [
+                'options' => [],
+                'expectedPayload' => [],
+            ],
+            'de-duplicate' => [
+                'options' => [
+                    Request::OPTION_NO_BAD_ALL,
+                    Request::OPTION_NO_BAD_ALL,
+                ],
+                'expectedPayload' => [
+                    Request::OPTION_NO_BAD_ALL => true,
+                ],
+            ],
+            'multiple options' => [
+                'options' => [
+                    Request::OPTION_NO_BAD_EMAIL,
+                    Request::OPTION_NO_BAD_USERNAME,
+                    Request::OPTION_NO_BAD_IP,
+                    Request::OPTION_NO_BAD_ALL,
+                    Request::OPTION_NO_TOR_EXIT,
+                    Request::OPTION_BAD_TOR_EXIT,
+                ],
+                'expectedPayload' => [
+                    Request::OPTION_NO_BAD_EMAIL => true,
+                    Request::OPTION_NO_BAD_USERNAME => true,
+                    Request::OPTION_NO_BAD_IP => true,
+                    Request::OPTION_NO_BAD_ALL => true,
+                    Request::OPTION_NO_TOR_EXIT => true,
+                    Request::OPTION_BAD_TOR_EXIT => true,
+                ],
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider getPayloadDataProvider
      */
     public function testGetPayload(
