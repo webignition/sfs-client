@@ -86,7 +86,7 @@ class ClientTest extends TestCase
                 'httpFixture' => new HttpResponse(
                     200,
                     ['content-type' => 'application/json'],
-                    json_encode(false)
+                    (string) json_encode(false)
                 ),
             ],
         ];
@@ -149,7 +149,7 @@ class ClientTest extends TestCase
             [
                 'content-type' => 'application/json',
             ],
-            json_encode($data)
+            (string) json_encode($data)
         );
     }
 }

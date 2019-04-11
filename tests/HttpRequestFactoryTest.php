@@ -40,8 +40,10 @@ class HttpRequestFactoryTest extends TestCase
         $httpRequestFactory = new HttpRequestFactory($customApiBaseUrl);
         $httpRequest = $httpRequestFactory->create($request);
 
-        $this->assertInstanceOf(RequestInterface::class, $httpRequest);
-        $this->assertEquals($customApiBaseUrl, $httpRequest->getUri());
+        if ($httpRequest instanceof RequestInterface) {
+            $this->assertInstanceOf(RequestInterface::class, $httpRequest);
+            $this->assertEquals($customApiBaseUrl, $httpRequest->getUri());
+        }
     }
 
     /**
@@ -51,15 +53,17 @@ class HttpRequestFactoryTest extends TestCase
     {
         $httpRequest = $this->httpRequestFactory->create($request);
 
-        $this->assertInstanceOf(RequestInterface::class, $httpRequest);
-        $this->assertEquals(HttpRequestFactory::API_BASE_URL, $httpRequest->getUri());
-        $this->assertEquals('POST', $httpRequest->getMethod());
-        $this->assertEquals('application/x-www-form-urlencoded', $httpRequest->getHeaderLine('content-type'));
+        if ($httpRequest instanceof RequestInterface) {
+            $this->assertInstanceOf(RequestInterface::class, $httpRequest);
+            $this->assertEquals(HttpRequestFactory::API_BASE_URL, $httpRequest->getUri());
+            $this->assertEquals('POST', $httpRequest->getMethod());
+            $this->assertEquals('application/x-www-form-urlencoded', $httpRequest->getHeaderLine('content-type'));
 
-        $postData = [];
-        parse_str(rawurldecode($httpRequest->getBody()->getContents()), $postData);
+            $postData = [];
+            parse_str(rawurldecode($httpRequest->getBody()->getContents()), $postData);
 
-        $this->assertEquals($expectedPostData, $postData);
+            $this->assertEquals($expectedPostData, $postData);
+        }
     }
 
     public function createHttpRequestSuccessDataProvider(): array
