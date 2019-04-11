@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4f04ea97dd05f2b3414f7c389b3727ef",
+    "content-hash": "017b4a2e56b0fcdb223c2848530bc9a8",
     "packages": [
         {
             "name": "webignition/sfs-result-factory",
@@ -2820,7 +2820,8 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.2.0"
+        "php": ">=7.2.0",
+        "ext-mbstring": "*"
     },
     "platform-dev": []
 }
