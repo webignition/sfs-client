@@ -35,7 +35,7 @@ if ($result instanceof ResultInterface) {
     $result->getType();                 // 'email', 'emailHash', 'ip' or 'username'
     $result->getFrequency();            // int
     $result->getAppears();              // bool
-    $result->getValue();                // value queried against (the email address, emailHash, IP address or username
+    $result->getValue();                // the email address, email hash, IP address or username
     $result->getLastSeen()              // \DateTime()|null
     $result->getConfidence()            // float|null
     $result->getDelegatedCountryCode(); // string|null
