@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpUnhandledExceptionInspection */
 /** @noinspection PhpDocSignatureInspection */
 
 namespace webignition\SfsClient\Tests;
@@ -9,11 +10,15 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response as HttpResponse;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface;
 use webignition\SfsClient\Client;
 use webignition\SfsClient\Request;
 use webignition\SfsClient\RequestFactory;
+use webignition\SfsResultFactory\ResultFactory;
 use webignition\SfsResultFactory\ResultSetFactory;
+use webignition\SfsResultInterfaces\ResultInterface;
 use webignition\SfsResultInterfaces\ResultSetInterface;
+use webignition\SfsResultModels\Result;
 
 class ClientTest extends TestCase
 {
@@ -219,6 +224,209 @@ class ClientTest extends TestCase
                         ],
                     ],
                 ]),
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider queryConvenienceMethodsDataProvider
+     */
+    public function testQueryConvenienceMethods(
+        ResponseInterface $httpFixture,
+        callable $executor,
+        ?ResultInterface $expectedResult,
+        array $expectedPostData
+    ) {
+        $this->httpMockHandler->append($httpFixture);
+
+        $client = new Client(
+            Client::API_BASE_URL,
+            $this->httpClient
+        );
+
+        $result = $executor($client);
+        $this->assertEquals($expectedResult, $result);
+
+        $lastRequest = $this->httpMockHandler->getLastRequest();
+
+        $postData = [];
+        parse_str(rawurldecode($lastRequest->getBody()->getContents()), $postData);
+
+        $this->assertSame($expectedPostData, $postData);
+    }
+
+    public function queryConvenienceMethodsDataProvider(): array
+    {
+        $resultFactory = ResultFactory::createFactory();
+
+        return [
+            'queryEmail; http request fails' => [
+                'httpFixture' => new Response(404),
+                'executor' => function (Client $client) {
+                    return $client->queryEmail('user@example.com');
+                },
+                'expectedResult' => null,
+                'expectedPostData' => [
+                    'email' => [
+                        'user@example.com',
+                    ],
+                    'json' => '1',
+                ],
+            ],
+            'queryEmail; http request succeeds' => [
+                'httpFixture' => $this->createJsonResponse([
+                    'success' => 1,
+                    'email' => [
+                        [
+                            'value' => 'user@example.com',
+                            'frequency' => 0,
+                            'appears' => 0,
+                        ],
+                    ],
+                ]),
+                'executor' => function (Client $client) {
+                    return $client->queryEmail('user@example.com');
+                },
+                'expectedResult' => $resultFactory->create(
+                    [
+                        'value' => 'user@example.com',
+                        'frequency' => 0,
+                        'appears' => 0,
+                    ],
+                    Result::TYPE_EMAIL
+                ),
+                'expectedPostData' => [
+                    'email' => [
+                        'user@example.com',
+                    ],
+                    'json' => '1',
+                ],
+            ],
+            'queryEmailHash; http request fails' => [
+                'httpFixture' => new Response(404),
+                'executor' => function (Client $client) {
+                    return $client->queryEmailHash('357f447e1fce6d524bb6c59796a418d6');
+                },
+                'expectedResult' => null,
+                'expectedPostData' => [
+                    'emailhash' => [
+                        '357f447e1fce6d524bb6c59796a418d6',
+                    ],
+                    'json' => '1',
+                ],
+            ],
+            'queryEmailHash; http request succeeds' => [
+                'httpFixture' => $this->createJsonResponse([
+                    'success' => 1,
+                    'emailHash' => [
+                        [
+                            'value' => '357f447e1fce6d524bb6c59796a418d6',
+                            'frequency' => 0,
+                            'appears' => 0,
+                        ],
+                    ],
+                ]),
+                'executor' => function (Client $client) {
+                    return $client->queryEmailHash('357f447e1fce6d524bb6c59796a418d6');
+                },
+                'expectedResult' => $resultFactory->create(
+                    [
+                        'value' => '357f447e1fce6d524bb6c59796a418d6',
+                        'frequency' => 0,
+                        'appears' => 0,
+                    ],
+                    Result::TYPE_EMAIL_HASH
+                ),
+                'expectedPostData' => [
+                    'emailhash' => [
+                        '357f447e1fce6d524bb6c59796a418d6',
+                    ],
+                    'json' => '1',
+                ],
+            ],
+            'queryIp; http request fails' => [
+                'httpFixture' => new Response(404),
+                'executor' => function (Client $client) {
+                    return $client->queryIp('127.0.0.1');
+                },
+                'expectedResult' => null,
+                'expectedPostData' => [
+                    'ip' => [
+                        '127.0.0.1',
+                    ],
+                    'json' => '1',
+                ],
+            ],
+            'queryIp; http request succeeds' => [
+                'httpFixture' => $this->createJsonResponse([
+                    'success' => 1,
+                    'ip' => [
+                        [
+                            'value' => '127.0.0.1',
+                            'frequency' => 0,
+                            'appears' => 0,
+                        ],
+                    ],
+                ]),
+                'executor' => function (Client $client) {
+                    return $client->queryIp('127.0.0.1');
+                },
+                'expectedResult' => $resultFactory->create(
+                    [
+                        'value' => '127.0.0.1',
+                        'frequency' => 0,
+                        'appears' => 0,
+                    ],
+                    Result::TYPE_IP
+                ),
+                'expectedPostData' => [
+                    'ip' => [
+                        '127.0.0.1',
+                    ],
+                    'json' => '1',
+                ],
+            ],
+            'queryUsername; http request fails' => [
+                'httpFixture' => new Response(404),
+                'executor' => function (Client $client) {
+                    return $client->queryUsername('user');
+                },
+                'expectedResult' => null,
+                'expectedPostData' => [
+                    'username' => [
+                        'user',
+                    ],
+                    'json' => '1',
+                ],
+            ],
+            'queryUsername; http request succeeds' => [
+                'httpFixture' => $this->createJsonResponse([
+                    'success' => 1,
+                    'username' => [
+                        [
+                            'value' => 'user',
+                            'frequency' => 0,
+                            'appears' => 0,
+                        ],
+                    ],
+                ]),
+                'executor' => function (Client $client) {
+                    return $client->queryUsername('user');
+                },
+                'expectedResult' => $resultFactory->create(
+                    [
+                        'value' => 'user',
+                        'frequency' => 0,
+                        'appears' => 0,
+                    ],
+                    Result::TYPE_USERNAME
+                ),
+                'expectedPostData' => [
+                    'username' => [
+                        'user',
+                    ],
+                    'json' => '1',
+                ],
             ],
         ];
     }
