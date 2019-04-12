@@ -4,15 +4,19 @@
 as its only argument and returns a [`ResultSetInterface`](https://github.com/webignition/sfs-result-interfaces) 
 instance.
  
-Use [`RequestFactory::create()`](https://github.com/webignition/sfs-client/blob/master/src/RequestFactory.php)
-to create a request.
+Learn about [creating a request](/docs/creating-a-request.md).
  
-Convenience methods exist for easily querying against single values:
+The `queryEmail()`, `queryEmailHash()`, `queryIP()` and `queryUsername()` convenience methods exist for 
+easily querying against single values.
 
-- `Client::queryEmail()` 
-- `Client::queryEmailHash()`
-- `Client::queryIp()`
-- `Client::queryUsername()`
+```php
+use webignition\SfsResultInterfaces\ResultSetInterface;
+
+public function queryEmail(string $email, array $options = []): ?ResultInterface;
+public function queryEmailHash(string $emailHash, array $options = []): ?ResultInterface;
+public function queryIp(string $ip, array $options = []): ?ResultInterface;
+public function queryUsername(string $username, array $options = []): ?ResultInterface;
+```
 
 Query convenience methods return a [`ResultInterface`](https://github.com/webignition/sfs-result-interfaces)
 instance, or `null` if the HTTP request failed.
