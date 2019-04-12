@@ -63,16 +63,10 @@ use webignition\SfsClient\RequestFactory;
 $client = new Cient();
 
 // Query against a single email address
-$request = RequestFactory::create([
-    RequestFactory::KEY_IPS => [
-        'user@example.com',
-    ],
-]);
-
-$resultSet = $client->query($request);
+$resultSet = $client->queryEmail('user@example.com');
 
 foreach ($resultSet as $result) {
-    $result->getType();                 //  'email', 'emailHash', 'ip' or 'username'
+    $result->getType();                 // 'email', 'emailHash', 'ip' or 'username'
     $result->getFrequency();            // int
     $result->getAppears();              // bool
     $result->getValue();                // value queried against (the email address, emailHash, IP address or username
@@ -95,7 +89,9 @@ $resultSet = $client->query(RequestFactory::create([
     ],
 ]));
 
-// Query against one or more email hashes
+// Query against email hashes
+$resultSet = $client->queryEmailHash('e959a91017a2718f759d6375ee52ddc9');
+
 $resultSet = $client->query(RequestFactory::create([
     RequestFactory::KEY_EMAIL_HASHES => [
         'e959a91017a2718f759d6375ee52ddc9',
@@ -103,7 +99,9 @@ $resultSet = $client->query(RequestFactory::create([
     ],
 ]));
 
-// Query against one or more IP addresses
+// Query against IP addresses
+$resultSet = $client->queryIp('127.0.0.1');
+
 $resultSet = $client->query(RequestFactory::create([
     RequestFactory::KEY_IPS => [
         '127.0.0.1',
@@ -111,7 +109,9 @@ $resultSet = $client->query(RequestFactory::create([
     ],
 ]));
 
-// Query against one or more usernames
+// Query against usernames
+$resultSet = $client->queryUsername('user1');
+
 $resultSet = $client->query(RequestFactory::create([
     RequestFactory::KEY_USERNAMES => [
         'user1',
