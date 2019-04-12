@@ -153,5 +153,5 @@ contains [webignition/sfs-result-analyser](https://github.com/webignition/sfs-re
 [webignition/sfs-client](https://github.com/webignition/sfs-client) and provides detailed
 usage instructions.
 
-[sfs-usage]: (https://www.stopforumspam.com/usage)
+[sfs-usage]: https://www.stopforumspam.com/usage
 
