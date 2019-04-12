@@ -12,35 +12,50 @@ use webignition\SfsResultModels\ResultSet;
 
 class Client
 {
+    const FORMAT_XML_CDATA = 'xmlcdata';
+    const FORMAT_XML_DOM = 'xmldom';
+    const FORMAT_PHP_SERIAL = 'serial';
+    const FORMAT_JSON_P = 'jsonp';
+    const FORMAT_JSON = 'json';
+    const API_BASE_URL = 'https://api.stopforumspam.com/api';
+
+    private $disallowedFormats = [
+        self::FORMAT_XML_CDATA,
+        self::FORMAT_XML_DOM,
+        self::FORMAT_PHP_SERIAL,
+        self::FORMAT_JSON_P,
+    ];
+
+    private $apiBaseUrl;
+
     private $httpClient;
-    private $httpRequestFactory;
     private $resultSetFactory;
 
     public function __construct(
-        HttpClient $httpClient,
-        HttpRequestFactory $httpRequestFactory,
-        ResultSetFactory $resultSetFactory
+        string $apiBaseUrl = self::API_BASE_URL,
+        ?HttpClient $httpClient = null,
+        ?ResultSetFactory $resultSetFactory = null
     ) {
-        $this->httpClient = $httpClient;
-        $this->httpRequestFactory = $httpRequestFactory;
-        $this->resultSetFactory = $resultSetFactory;
-    }
-
-    public static function create(string $apiBaseUrl = HttpRequestFactory::API_BASE_URL): Client
-    {
-        return new Client(
-            new HttpClient(),
-            new HttpRequestFactory($apiBaseUrl),
-            new ResultSetFactory()
-        );
+        $this->apiBaseUrl = $apiBaseUrl;
+        $this->httpClient = $httpClient ?? new HttpClient();
+        $this->resultSetFactory = $resultSetFactory ?? new ResultSetFactory();
     }
 
     public function query(Request $request): ResultSetInterface
     {
-        $httpRequest = $this->httpRequestFactory->create($request);
-        if (empty($httpRequest)) {
+        $requestPayload = $this->normaliseRequestPayload($request);
+        if (empty($requestPayload)) {
             return new ResultSet();
         }
+
+        $requestPayload[self::FORMAT_JSON] = true;
+
+        $httpRequest = new \GuzzleHttp\Psr7\Request(
+            'POST',
+            $this->apiBaseUrl,
+            ['content-type' => 'application/x-www-form-urlencoded'],
+            http_build_query($requestPayload, '', '&')
+        );
 
         $httpResponse = $this->getHttpResponse($httpRequest);
         if (empty($httpResponse)) {
@@ -77,5 +92,17 @@ class Client
         $contentTypeHeaderLine = $response->getHeaderLine('content-type');
 
         return substr($contentTypeHeaderLine, 0, strlen($contentType)) === $contentType;
+    }
+
+    private function normaliseRequestPayload(Request $request): array
+    {
+        $payload = $request->getPayload();
+        foreach ($this->disallowedFormats as $disallowedFormat) {
+            if (array_key_exists($disallowedFormat, $payload)) {
+                unset($payload[$disallowedFormat]);
+            }
+        }
+
+        return $payload;
     }
 }
