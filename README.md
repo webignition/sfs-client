@@ -48,8 +48,22 @@ $client = new Client(
 
 ### Querying
 
-`Client::query()` takes a `webignition\SfsClient\Request` as its only argument and returns a
-[`ResultSetInterface`](https://github.com/webignition/sfs-result-models) instance.
+`Client::query()` takes a [`Request`](https://github.com/webignition/sfs-client/blob/master/src/Request.php)
+as its only argument and returns a [`ResultSetInterface`](https://github.com/webignition/sfs-result-interfaces) 
+instance.
+ 
+Use [`RequestFactory::create()`](https://github.com/webignition/sfs-client/blob/master/src/RequestFactory.php)
+to create a request.
+ 
+Convenience methods exist for easily querying against single values:
+
+- `Client::queryEmail()` 
+- `Client::queryEmailHash()`
+- `Client::queryIp()`
+- `Client::queryUsername()`
+
+Query convenience methods return a [`ResultInterface`](https://github.com/webignition/sfs-result-interfaces)
+instance, or `null` if the HTTP request failed.
 
 The examples below cover this more clearly.
 
