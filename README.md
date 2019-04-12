@@ -72,17 +72,17 @@ $request = RequestFactory::create([
 $resultSet = $client->query($request);
 
 foreach ($resultSet as $result) {
-    $result->getType(); //  'email', 'emailHash', 'ip' or 'username'
-    $result->getFrequency(); // int
-    $result->getAppears(); // bool
-    $result->getValue(); // value queried against (the email address, emailHash, IP address or username
-    $result->getLastSeen() // \DateTime()|null
-    $result->getConfidence() // float|null
+    $result->getType();                 //  'email', 'emailHash', 'ip' or 'username'
+    $result->getFrequency();            // int
+    $result->getAppears();              // bool
+    $result->getValue();                // value queried against (the email address, emailHash, IP address or username
+    $result->getLastSeen()              // \DateTime()|null
+    $result->getConfidence()            // float|null
     $result->getDelegatedCountryCode(); // string|null
-    $result->getCountryCode(); // string|null
-    $result->getAsn(); // int|null
-    $result->isBlacklisted(); // bool
-    $result->isTorExitNode(); // bool|null
+    $result->getCountryCode();          // string|null
+    $result->getAsn();                  // int|null
+    $result->isBlacklisted();           // bool
+    $result->isTorExitNode();           // bool|null
 }
 
 // Query against multiple email addresses
