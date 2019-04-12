@@ -59,13 +59,16 @@ The examples below cover this more clearly.
 use webignition\SfsClient\Client;
 use webignition\SfsClient\Request;
 use webignition\SfsClient\RequestFactory;
+use webignition\SfsResultInterfaces\ResultInterface;
 
 $client = new Cient();
 
 // Query against a single email address
-$resultSet = $client->queryEmail('user@example.com');
+$result = $client->queryEmail('user@example.com');
 
-foreach ($resultSet as $result) {
+// $result will be NULL if the HTTP request to query api.stopforumspam.com failed for any reason
+
+if ($result instanceof ResultInterface) {
     $result->getType();                 // 'email', 'emailHash', 'ip' or 'username'
     $result->getFrequency();            // int
     $result->getAppears();              // bool
@@ -89,8 +92,12 @@ $resultSet = $client->query(RequestFactory::create([
     ],
 ]));
 
+foreach ($resultSet as $result) {
+    // ...
+}
+
 // Query against email hashes
-$resultSet = $client->queryEmailHash('e959a91017a2718f759d6375ee52ddc9');
+$result = $client->queryEmailHash('e959a91017a2718f759d6375ee52ddc9');
 
 $resultSet = $client->query(RequestFactory::create([
     RequestFactory::KEY_EMAIL_HASHES => [
@@ -100,7 +107,7 @@ $resultSet = $client->query(RequestFactory::create([
 ]));
 
 // Query against IP addresses
-$resultSet = $client->queryIp('127.0.0.1');
+$result = $client->queryIp('127.0.0.1');
 
 $resultSet = $client->query(RequestFactory::create([
     RequestFactory::KEY_IPS => [
@@ -110,7 +117,7 @@ $resultSet = $client->query(RequestFactory::create([
 ]));
 
 // Query against usernames
-$resultSet = $client->queryUsername('user1');
+$result = $client->queryUsername('user1');
 
 $resultSet = $client->query(RequestFactory::create([
     RequestFactory::KEY_USERNAMES => [
