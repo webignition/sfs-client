@@ -36,8 +36,5 @@ use webignition\SfsClient\Client;
 
 $httpClient = new HttpClient();
 
-$client = new Client(
-    Client::API_BASE_URL,
-    $httpClient
-);
+$client = new Client(Client::API_BASE_URL, $httpClient);
 ```
