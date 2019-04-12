@@ -7,6 +7,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\RequestInterface as HttpRequest;
 use Psr\Http\Message\ResponseInterface as HttpResponse;
 use webignition\SfsResultFactory\ResultSetFactory;
+use webignition\SfsResultInterfaces\ResultInterface;
 use webignition\SfsResultInterfaces\ResultSetInterface;
 use webignition\SfsResultModels\ResultSet;
 
@@ -72,6 +73,40 @@ class Client
         }
 
         return $this->resultSetFactory->create($responseData);
+    }
+
+    public function queryEmail(string $email, array $options = []): ?ResultInterface
+    {
+        return $this->querySingleValue($email, RequestFactory::KEY_EMAILS, $options);
+    }
+
+    public function queryEmailHash(string $emailHash, array $options = []): ?ResultInterface
+    {
+        return $this->querySingleValue($emailHash, RequestFactory::KEY_EMAIL_HASHES, $options);
+    }
+
+    public function queryIp(string $ip, array $options = []): ?ResultInterface
+    {
+        return $this->querySingleValue($ip, RequestFactory::KEY_IPS, $options);
+    }
+
+    public function queryUsername(string $username, array $options = []): ?ResultInterface
+    {
+        return $this->querySingleValue($username, RequestFactory::KEY_USERNAMES, $options);
+    }
+
+    private function querySingleValue(string $value, string $type, array $options = []): ?ResultInterface
+    {
+        $resultSet = $this->query(RequestFactory::create([
+            $type => [
+                $value,
+            ],
+            RequestFactory::KEY_OPTIONS => $options,
+        ]));
+
+        return count($resultSet) > 0
+            ? $resultSet->current()
+            : null;
     }
 
     private function getHttpResponse(HttpRequest $request): ?HttpResponse

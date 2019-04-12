@@ -48,8 +48,22 @@ $client = new Client(
 
 ### Querying
 
-`Client::query()` takes a `webignition\SfsClient\Request` as its only argument and returns a
-[`ResultSetInterface`](https://github.com/webignition/sfs-result-models) instance.
+`Client::query()` takes a [`Request`](https://github.com/webignition/sfs-client/blob/master/src/Request.php)
+as its only argument and returns a [`ResultSetInterface`](https://github.com/webignition/sfs-result-interfaces) 
+instance.
+ 
+Use [`RequestFactory::create()`](https://github.com/webignition/sfs-client/blob/master/src/RequestFactory.php)
+to create a request.
+ 
+Convenience methods exist for easily querying against single values:
+
+- `Client::queryEmail()` 
+- `Client::queryEmailHash()`
+- `Client::queryIp()`
+- `Client::queryUsername()`
+
+Query convenience methods return a [`ResultInterface`](https://github.com/webignition/sfs-result-interfaces)
+instance, or `null` if the HTTP request failed.
 
 The examples below cover this more clearly.
 
@@ -59,20 +73,17 @@ The examples below cover this more clearly.
 use webignition\SfsClient\Client;
 use webignition\SfsClient\Request;
 use webignition\SfsClient\RequestFactory;
+use webignition\SfsResultInterfaces\ResultInterface;
 
 $client = new Cient();
 
 // Query against a single email address
-$request = RequestFactory::create([
-    RequestFactory::KEY_IPS => [
-        'user@example.com',
-    ],
-]);
+$result = $client->queryEmail('user@example.com');
 
-$resultSet = $client->query($request);
+// $result will be NULL if the HTTP request to query api.stopforumspam.com failed for any reason
 
-foreach ($resultSet as $result) {
-    $result->getType();                 //  'email', 'emailHash', 'ip' or 'username'
+if ($result instanceof ResultInterface) {
+    $result->getType();                 // 'email', 'emailHash', 'ip' or 'username'
     $result->getFrequency();            // int
     $result->getAppears();              // bool
     $result->getValue();                // value queried against (the email address, emailHash, IP address or username
@@ -95,7 +106,13 @@ $resultSet = $client->query(RequestFactory::create([
     ],
 ]));
 
-// Query against one or more email hashes
+foreach ($resultSet as $result) {
+    // ...
+}
+
+// Query against email hashes
+$result = $client->queryEmailHash('e959a91017a2718f759d6375ee52ddc9');
+
 $resultSet = $client->query(RequestFactory::create([
     RequestFactory::KEY_EMAIL_HASHES => [
         'e959a91017a2718f759d6375ee52ddc9',
@@ -103,7 +120,9 @@ $resultSet = $client->query(RequestFactory::create([
     ],
 ]));
 
-// Query against one or more IP addresses
+// Query against IP addresses
+$result = $client->queryIp('127.0.0.1');
+
 $resultSet = $client->query(RequestFactory::create([
     RequestFactory::KEY_IPS => [
         '127.0.0.1',
@@ -111,7 +130,9 @@ $resultSet = $client->query(RequestFactory::create([
     ],
 ]));
 
-// Query against one or more usernames
+// Query against usernames
+$result = $client->queryUsername('user1');
+
 $resultSet = $client->query(RequestFactory::create([
     RequestFactory::KEY_USERNAMES => [
         'user1',
