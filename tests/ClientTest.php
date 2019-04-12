@@ -7,9 +7,9 @@ use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response as HttpResponse;
+use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 use webignition\SfsClient\Client;
-use webignition\SfsClient\HttpRequestFactory;
 use webignition\SfsClient\Request;
 use webignition\SfsClient\RequestFactory;
 use webignition\SfsResultFactory\ResultSetFactory;
@@ -27,25 +27,47 @@ class ClientTest extends TestCase
      */
     private $httpMockHandler;
 
+    /**
+     * @var HttpClient
+     */
+    private $httpClient;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->httpMockHandler = new MockHandler();
 
-        $httpClient = new HttpClient([
+        $this->httpClient = new HttpClient([
             'handler' => HandlerStack::create($this->httpMockHandler),
         ]);
-        $httpRequestFactory = new HttpRequestFactory();
-        $resultSetFactory = new ResultSetFactory();
-        $this->client = new Client($httpClient, $httpRequestFactory, $resultSetFactory);
+
+        $this->client = new Client(
+            Client::API_BASE_URL,
+            $this->httpClient
+        );
     }
 
-    public function testCreate()
+    public function testQueryCustomApiUrl()
     {
-        $client = Client::create();
+        $url = 'http://api.example.com/';
 
-        $this->assertInstanceOf(Client::class, $client);
+        $this->httpMockHandler->append(new Response(404));
+
+        $client = new Client(
+            $url,
+            $this->httpClient
+        );
+
+        $client->query(RequestFactory::create([
+            RequestFactory::KEY_IPS => [
+                '127.0.0.1',
+            ],
+        ]));
+
+        $lastRequest = $this->httpMockHandler->getLastRequest();
+
+        $this->assertEquals($url, $lastRequest->getUri());
     }
 
     public function testQueryEmptyPayload()
@@ -93,10 +115,69 @@ class ClientTest extends TestCase
     }
 
     /**
+     * @dataProvider queryHttpRequestCreationDataProvider
+     */
+    public function testQueryHttpRequestCreation(
+        Request $request,
+        array $expectedPostData
+    ) {
+        $this->httpMockHandler->append(new HttpResponse(404));
+        $this->client->query($request);
+
+        $lastRequest = $this->httpMockHandler->getLastRequest();
+
+        $postData = [];
+        parse_str(rawurldecode($lastRequest->getBody()->getContents()), $postData);
+
+        $this->assertEquals($expectedPostData, $postData);
+    }
+
+    public function queryHttpRequestCreationDataProvider(): array
+    {
+        return [
+            'single ip request' => [
+                'request' => RequestFactory::create([
+                    RequestFactory::KEY_IPS => [
+                        '127.0.0.1',
+                    ],
+                ]),
+                'expectedPostData' => [
+                    'ip' => [
+                        '127.0.0.1',
+                    ],
+                    'json' => '1',
+                ],
+            ],
+            'disallowed request formats are removed' => [
+                'request' => RequestFactory::create([
+                    RequestFactory::KEY_IPS => [
+                        '127.0.0.1',
+                    ],
+                    RequestFactory::KEY_OPTIONS => [
+                        Client::FORMAT_XML_CDATA,
+                        Client::FORMAT_XML_DOM,
+                        Client::FORMAT_PHP_SERIAL,
+                        Client::FORMAT_JSON_P,
+                    ],
+                ]),
+                'expectedPostData' => [
+                    'ip' => [
+                        '127.0.0.1',
+                    ],
+                    'json' => '1',
+                ],
+            ],
+        ];
+    }
+
+    /**
      * @dataProvider querySuccessDataProvider
      */
-    public function testQuerySuccess(Request $request, HttpResponse $httpFixture, ResultSetInterface $expectedResultSet)
-    {
+    public function testQuerySuccess(
+        Request $request,
+        HttpResponse $httpFixture,
+        ResultSetInterface $expectedResultSet
+    ) {
         $this->httpMockHandler->append($httpFixture);
 
         $resultSet = $this->client->query($request);
